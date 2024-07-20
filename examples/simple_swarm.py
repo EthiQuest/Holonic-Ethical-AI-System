@@ -3,6 +3,7 @@ from src.core.communication import CommunicationProtocol, Priority
 from src.core.ethics import EthicalHolon
 from src.system_management.restructuring import AdvancedRestructuringManager, AdvancedPerformanceMetrics
 from src.visualization.system_visualizer import SystemVisualizer
+from src.task_management.task_generator import RealWorldScenarioGenerator
 import random
 
 class AdvancedAdaptiveHolonManager:
@@ -73,36 +74,53 @@ def main():
     comm_protocol = CommunicationProtocol()
     holon_manager = AdvancedAdaptiveHolonManager(comm_protocol)
 
-    # Create a more diverse swarm
-    leader = EthicalHolon(Holon("Leader", ["coordinate", "delegate"], comm_protocol))
-    worker1 = EthicalHolon(Holon("Worker1", ["process_data", "analyze"], comm_protocol))
-    worker2 = EthicalHolon(Holon("Worker2", ["make_decision", "process_data"], comm_protocol))
-    worker3 = EthicalHolon(Holon("Worker3", ["analyze", "make_decision"], comm_protocol))
-    worker4 = EthicalHolon(Holon("Worker4", ["process_data", "coordinate"], comm_protocol))
+    # Create a more diverse swarm with capabilities matching our scenarios
+    leader = EthicalHolon(Holon("Leader", ["coordinate", "delegate", "situation_assessment"], comm_protocol))
+    worker1 = EthicalHolon(Holon("Worker1", ["data_collection", "data_cleaning", "supply_chain_management"], comm_protocol))
+    worker2 = EthicalHolon(Holon("Worker2", ["data_analysis", "report_generation", "production_planning"], comm_protocol))
+    worker3 = EthicalHolon(Holon("Worker3", ["quality_control", "maintenance", "emergency_detection"], comm_protocol))
+    worker4 = EthicalHolon(Holon("Worker4", ["inventory_management", "resource_allocation", "rescue_operation"], comm_protocol))
+    worker5 = EthicalHolon(Holon("Worker5", ["communication_coordination", "routine_task", "urgent_task"], comm_protocol))
 
-    for holon in [leader, worker1, worker2, worker3, worker4]:
+    for holon in [leader, worker1, worker2, worker3, worker4, worker5]:
         holon_manager.add_holon(holon.base_holon)
 
     # Set up initial hierarchy
     leader.base_holon.add_child(worker1.base_holon)
     leader.base_holon.add_child(worker2.base_holon)
-    worker2.base_holon.add_child(worker3.base_holon)
+    worker1.base_holon.add_child(worker3.base_holon)
     worker2.base_holon.add_child(worker4.base_holon)
+    worker2.base_holon.add_child(worker5.base_holon)
+
+    # Create task generators for different scenarios
+    scenario_generator = RealWorldScenarioGenerator()
+    data_processing_generator = scenario_generator.create_data_processing_scenario()
+    manufacturing_generator = scenario_generator.create_manufacturing_scenario()
+    emergency_response_generator = scenario_generator.create_emergency_response_scenario()
+    dynamic_generator = scenario_generator.create_dynamic_scenario(200)
 
     # Run the system for several cycles with varying workloads and task types
-    for cycle in range(50):
+    for cycle in range(200):
         print(f"\nCycle {cycle + 1}:")
         
-        # Submit tasks with varying types, priorities, and frequencies
-        for _ in range(random.randint(1, 4)):  # Submit 1 to 4 tasks per cycle
-            task_type = random.choice(["process_data", "analyze", "make_decision", "coordinate"])
-            priority = random.choice([Priority.LOW, Priority.MEDIUM, Priority.HIGH])
-            holon_manager.submit_task(task_type, {"data": f"task_data_{cycle}"}, priority)
+        # Generate tasks from different scenarios
+        if cycle < 50:
+            tasks = data_processing_generator.generate_tasks(1)
+        elif cycle < 100:
+            tasks = manufacturing_generator.generate_tasks(1)
+        elif cycle < 150:
+            tasks = emergency_response_generator.generate_tasks(1)
+        else:
+            tasks = dynamic_generator.generate_tasks(1)
+
+        # Submit generated tasks
+        for task in tasks:
+            holon_manager.submit_task(task["type"], task, task["priority"])
 
         holon_manager.process_cycle()
 
-        # Print current system structure and performance every 10 cycles
-        if cycle % 10 == 0:
+        # Print current system structure and performance every 20 cycles
+        if cycle % 20 == 0:
             print("\nCurrent System Structure and Performance:")
             for holon in holon_manager.holons:
                 print(f"{holon.name}: Capabilities={holon.capabilities}, "
