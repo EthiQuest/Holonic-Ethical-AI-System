@@ -1,8 +1,16 @@
-# Holonic AI Agent Swarm System
 
-## Overview
+# Holonic Ethical AI System
 
-The Holonic AI Agent Swarm System is a cutting-edge initiative by EthiQuest.ai, a forward-thinking consultancy focused on guiding organizations through ethical AI innovation and leadership development. This system serves as a powerful demonstration and training tool for implementing adaptive, ethically-aligned AI in complex business environments.
+A project by EthiQuest.ai
+
+## Repository Information
+
+- **Organization**: [EthiQuest](https://github.com/EthiQuest)
+- **Project**: [holonic-ethical-ai-system](https://github.com/EthiQuest/holonic-ethical-ai-system)
+
+This Holonic Ethical AI System is a cornerstone project in EthiQuest.ai's mission to guide organizations through ethical AI innovation and leadership development. It demonstrates practical implementation of ethical AI principles in a complex, adaptive multi-agent system.
+
+The system is a cutting-edge initiative by EthiQuest.ai, a forward-thinking consultancy focused on guiding organizations through ethical AI innovation and leadership development. This system serves as a powerful demonstration and training tool for implementing adaptive, ethically-aligned AI in complex business environments.
 
 ## EthiQuest.ai Mission Alignment
 
