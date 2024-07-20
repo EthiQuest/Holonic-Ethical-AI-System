@@ -1,12 +1,14 @@
 from src.core.holon import Holon
-from src.core.communication import CommunicationProtocol
+from src.core.communication import CommunicationProtocol, MessageType, Priority
 from src.core.ethics import EthicalHolon
 
 def main():
+    comm_protocol = CommunicationProtocol()
+
     # Create a simple swarm
-    leader = EthicalHolon(Holon("Leader", ["coordinate", "delegate"]))
-    worker1 = EthicalHolon(Holon("Worker1", ["process_data"]))
-    worker2 = EthicalHolon(Holon("Worker2", ["make_decision"]))
+    leader = EthicalHolon(Holon("Leader", ["coordinate", "delegate"], comm_protocol))
+    worker1 = EthicalHolon(Holon("Worker1", ["process_data"], comm_protocol))
+    worker2 = EthicalHolon(Holon("Worker2", ["make_decision"], comm_protocol))
 
     leader.base_holon.add_child(worker1.base_holon)
     leader.base_holon.add_child(worker2.base_holon)
@@ -19,9 +21,18 @@ def main():
     ]
 
     for task in tasks:
-        print(f"\nExecuting task: {task}")
-        result = leader.execute_task(task)
-        print(f"Result: {result}")
+        print(f"\nSending task: {task}")
+        if task['type'] == "process_data":
+            leader.base_holon.send_message(worker1.base_holon.id, MessageType.TASK, task, Priority.HIGH)
+        elif task['type'] == "make_decision":
+            leader.base_holon.send_message(worker2.base_holon.id, MessageType.TASK, task, Priority.MEDIUM)
+        else:
+            leader.base_holon.send_message(worker1.base_holon.id, MessageType.TASK, task, Priority.LOW)
+
+    # Process messages
+    for holon in [leader.base_holon, worker1.base_holon, worker2.base_holon]:
+        print(f"\nProcessing messages for {holon.name}")
+        holon.process_messages()
 
 if __name__ == "__main__":
     main()
