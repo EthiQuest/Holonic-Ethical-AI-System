@@ -1,9 +1,11 @@
 from src.core.holon import Holon
 from src.core.communication import CommunicationProtocol, Priority
 from src.core.ethics import EthicalHolon
-from src.system_management.restructuring import AdvancedRestructuringManager, AdvancedPerformanceMetrics
+from src.system_management.advanced_restructuring import AdvancedRestructuringManager
+from src.task_management.advanced_allocator import AdvancedTaskAllocator
 from src.visualization.system_visualizer import SystemVisualizer
 from src.task_management.task_generator import RealWorldScenarioGenerator
+from src.analysis.performance_analyzer import PerformanceAnalyzer
 import random
 
 class AdvancedAdaptiveHolonManager:
@@ -12,61 +14,63 @@ class AdvancedAdaptiveHolonManager:
         self.comm_protocol = comm_protocol
         self.performance_metrics = AdvancedPerformanceMetrics()
         self.restructuring_manager = None
+        self.task_allocator = None
         self.visualizer = SystemVisualizer()
+        self.performance_analyzer = PerformanceAnalyzer()
+        self.current_cycle = 0
+        self.current_scenario = ""
 
     def add_holon(self, holon: Holon):
         self.holons.append(holon)
-        if len(self.holons) > 1 and not self.restructuring_manager:
-            self.restructuring_manager = AdvancedRestructuringManager(self.holons)
+        if len(self.holons) > 1:
+            if not self.restructuring_manager:
+                self.restructuring_manager = AdvancedRestructuringManager(self.holons, self.performance_metrics)
+            if not self.task_allocator:
+                self.task_allocator = AdvancedTaskAllocator(self.holons, self.performance_metrics)
 
     def submit_task(self, task_type: str, content: Dict[str, Any], priority: Priority = Priority.MEDIUM):
-        capable_holons = [h for h in self.holons if task_type in h.capabilities]
-        if capable_holons:
-            chosen_holon = min(capable_holons, key=lambda h: len(h.state.get('pending_tasks', [])))
+        task = {"type": task_type, "content": content, "priority": priority}
+        chosen_holon = self.task_allocator.allocate_task(task)
+        if chosen_holon:
             chosen_holon.state.setdefault('pending_tasks', []).append(task_type)
-            chosen_holon.send_message(chosen_holon.id, MessageType.TASK, {"type": task_type, "content": content}, priority)
+            chosen_holon.send_message(chosen_holon.id, MessageType.TASK, task, priority)
+        else:
+            print(f"No suitable holon found for task {task_type}")
 
     def process_cycle(self):
-        cycle_start_time = time.time()
-        
-        # Process messages for each holon
         for holon in self.holons:
             while True:
                 message = holon.receive_message()
                 if not message:
                     break
-                self._process_message(holon, message, cycle_start_time)
+                self._process_message(holon, message)
 
-        # Update performance metrics
         performance = self.restructuring_manager.evaluate_system_performance()
         self.visualizer.update(self.holons, performance)
+        
+        task_performances = {task_type: self.performance_metrics.get_task_success_rate(task_type)
+                             for task_type in self.performance_metrics.task_success_rates}
+        holon_performances = {holon.name: self.performance_metrics.get_average_resource_utilization(holon.id) 
+                              for holon in self.holons}
+        self.performance_analyzer.log_performance(self.current_cycle, self.current_scenario, 
+                                                  performance, task_performances, holon_performances)
 
-        # Check if restructuring is needed
         if self.restructuring_manager.needs_restructuring():
             self.restructuring_manager.restructure()
+            self.performance_analyzer.log_restructuring(self.current_cycle)
 
-        # Update energy consumption (simplified model)
-        cycle_duration = time.time() - cycle_start_time
-        for holon in self.holons:
-            energy_consumed = len(holon.state.get('pending_tasks', [])) * cycle_duration
-            self.performance_metrics.update_energy_consumption(holon.id, energy_consumed)
-            self.performance_metrics.update_resource_utilization(holon.id, len(holon.state.get('pending_tasks', [])) / 10)  # Simplified utilization metric
-
-    def _process_message(self, holon: Holon, message, cycle_start_time):
+    def _process_message(self, holon: Holon, message):
         if message.type == MessageType.TASK:
             result = holon.execute_task(message.content)
             holon.send_message(message.sender_id, MessageType.RESULT, result)
-            # Update performance metrics
-            task_completion_time = time.time() - cycle_start_time
+            task_completion_time = random.uniform(0.5, 2.0)  # Simulated task completion time
             self.performance_metrics.update_task_completion_time(message.content['type'], task_completion_time)
             self.performance_metrics.update_task_success(message.content['type'], result['status'] == 'success')
-            # Update holon state
             holon.state['pending_tasks'].remove(message.content['type'])
         elif message.type == MessageType.RESULT:
             print(f"{holon.name} received result: {message.content}")
         elif message.type == MessageType.RESTRUCTURE:
             print(f"{holon.name} restructured: {message.content}")
-            # Update holon based on restructuring message
             holon.capabilities = message.content['new_capabilities']
             # Parent and children updates would be handled here in a full implementation
 
@@ -100,39 +104,7 @@ def main():
     dynamic_generator = scenario_generator.create_dynamic_scenario(200)
 
     # Run the system for several cycles with varying workloads and task types
+    scenarios = ["Data Processing", "Manufacturing", "Emergency Response", "Dynamic Scenario"]
+    scenario_duration = 50
     for cycle in range(200):
-        print(f"\nCycle {cycle + 1}:")
-        
-        # Generate tasks from different scenarios
-        if cycle < 50:
-            tasks = data_processing_generator.generate_tasks(1)
-        elif cycle < 100:
-            tasks = manufacturing_generator.generate_tasks(1)
-        elif cycle < 150:
-            tasks = emergency_response_generator.generate_tasks(1)
-        else:
-            tasks = dynamic_generator.generate_tasks(1)
-
-        # Submit generated tasks
-        for task in tasks:
-            holon_manager.submit_task(task["type"], task, task["priority"])
-
-        holon_manager.process_cycle()
-
-        # Print current system structure and performance every 20 cycles
-        if cycle % 20 == 0:
-            print("\nCurrent System Structure and Performance:")
-            for holon in holon_manager.holons:
-                print(f"{holon.name}: Capabilities={holon.capabilities}, "
-                      f"Parent={holon.parent.name if holon.parent else 'None'}, "
-                      f"Children={[child.name for child in holon.children]}")
-            
-            performance = holon_manager.restructuring_manager.evaluate_system_performance()
-            print(f"Overall System Performance: {performance:.2f}")
-
-    # After all cycles, visualize the results
-    holon_manager.visualizer.plot_performance()
-    holon_manager.visualizer.animate_structure_changes()
-
-if __name__ == "__main__":
-    main()
+        holon_manager.current_cycle = cycle
