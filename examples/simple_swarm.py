@@ -1,7 +1,22 @@
 from src.core.holon import Holon
 from src.core.communication import CommunicationProtocol, Priority
 from src.core.ethics import EthicalHolon
-from src.system_management.restructuring import AdaptiveHolonManager
+from src.system_management.restructuring import AdvancedRestructuringManager, AdvancedPerformanceMetrics
+from src.visualization.system_visualizer import SystemVisualizer
+import random
+
+class AdvancedAdaptiveHolonManager:
+    def __init__(self, comm_protocol):
+        self.holons: List[Holon] = []
+        self.comm_protocol = comm_protocol
+        self.performance_metrics = AdvancedPerformanceMetrics()
+        self.restructuring_manager = None
+        self.visualizer = SystemVisualizer()
+
+    def add_holon(self, holon: Holon):
+        self.holons.append(holon)
+
+
 
 def main():
     comm_protocol = CommunicationProtocol()
