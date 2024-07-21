@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 import { Button, Select, MenuItem, FormControl, InputLabel, Typography, Grid, Paper } from '@material-ui/core';
 
 const socket = io('http://localhost:5000');
@@ -8,12 +8,28 @@ const socket = io('http://localhost:5000');
 function App() {
   const [systemData, setSystemData] = useState(null);
   const [performanceHistory, setPerformanceHistory] = useState([]);
+  const [holonPerformanceHistory, setHolonPerformanceHistory] = useState({});
 
   useEffect(() => {
     socket.on('system_update', (data) => {
       setSystemData(data);
       setPerformanceHistory(prev => [...prev, { cycle: data.current_cycle, performance: data.performance }]);
+      
+      // Update holon performance history
+      const newHolonPerformance = {};
+      Object.entries(data.holon_performance).forEach(([holonName, performance]) => {
+        newHolonPerformance[holonName] = [
+          ...(holonPerformanceHistory[holonName] || []),
+          { cycle: data.current_cycle, ...performance }
+        ];
+      });
+      setHolonPerformanceHistory(newHolonPerformance);
     });
+
+    // Fetch initial holon performance history
+    fetch('http://localhost:5000/holon_performance_history')
+      .then(response => response.json())
+      .then(data => setHolonPerformanceHistory(data));
 
     return () => {
       socket.off('system_update');
@@ -30,7 +46,8 @@ function App() {
     <div className="App">
       <Typography variant="h4" gutterBottom>Holonic System Dashboard</Typography>
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        {/* Existing components... */}
+    
           <Paper style={{ padding: 16 }}>
             <Typography variant="h6">System Overview</Typography>
             <p>Current Scenario: {systemData.current_scenario}</p>
@@ -97,6 +114,33 @@ function App() {
             ))}
           </Paper>
         </Grid>
+
+        {/* New Holon Performance Charts */}
+        {systemData.holons.map(holon => (
+          <Grid item xs={12} md={6} key={holon.id}>
+            <Paper style={{ padding: 16 }}>
+              <Typography variant="h6">{holon.name} Performance</Typography>
+              <LineChart width={500} height={300} data={holonPerformanceHistory[holon.name]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="cycle" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="success_rate" stroke="#8884d8" name="Success Rate" />
+                <Line type="monotone" dataKey="resource_utilization" stroke="#82ca9d" name="Resource Utilization" />
+              </LineChart>
+              <BarChart width={500} height={300} data={[systemData.holon_performance[holon.name]]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="tasks_completed" fill="#8884d8" name="Tasks Completed" />
+                <Bar dataKey="avg_completion_time" fill="#82ca9d" name="Avg Completion Time" />
+              </BarChart>
+            </Paper>
+          </Grid>
+        ))}
       </Grid>
     </div>
   );
