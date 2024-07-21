@@ -16,6 +16,9 @@ class DashboardServer:
         self.thread_lock = threading.Lock()
         self.holon_performance_history = {holon.name: [] for holon in holon_manager.holons}
 
+    # ... (previous methods remain the same)
+
+    
     def start(self):
         with self.thread_lock:
             if self.thread is None:
@@ -34,8 +37,25 @@ class DashboardServer:
             'active_events': [str(e) for e in self.holon_manager.event_generator.get_active_events()],
             'current_scenario': self.holon_manager.current_scenario,
             'current_cycle': self.holon_manager.current_cycle,
-            'holon_performance': self.get_holon_performance()
+            'holon_performance': self.get_holon_performance(),
+            'holon_network': self.get_holon_network()
         }
+
+    def get_holon_network(self):
+        nodes = []
+        links = []
+        for holon in self.holon_manager.holons:
+            nodes.append({
+                'id': holon.id,
+                'name': holon.name,
+                'capabilities': holon.capabilities
+            })
+            if holon.parent:
+                links.append({
+                    'source': holon.parent.id,
+                    'target': holon.id
+                })
+        return {'nodes': nodes, 'links': links}
 
     def holon_to_dict(self, holon):
         return {
@@ -73,6 +93,10 @@ class DashboardServer:
         
         return performance_data
 
+@app.route('/holon_network')
+def holon_network():
+    return jsonify(dashboard_server.get_holon_network())
+    
 @app.route('/system_data')
 def system_data():
     return jsonify(dashboard_server.get_system_data())
