@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 import { Button, Select, MenuItem, FormControl, InputLabel, Typography, Grid, Paper } from '@material-ui/core';
+import ForceGraph2D from 'react-force-graph-2d';
 
 const socket = io('http://localhost:5000');
 
@@ -9,6 +10,7 @@ function App() {
   const [systemData, setSystemData] = useState(null);
   const [performanceHistory, setPerformanceHistory] = useState([]);
   const [holonPerformanceHistory, setHolonPerformanceHistory] = useState({});
+  const [holonNetwork, setHolonNetwork] = useState({ nodes: [], links: [] });
 
   useEffect(() => {
     socket.on('system_update', (data) => {
@@ -24,12 +26,20 @@ function App() {
         ];
       });
       setHolonPerformanceHistory(newHolonPerformance);
+
+      // Update holon network
+      setHolonNetwork(data.holon_network);
     });
 
     // Fetch initial holon performance history
     fetch('http://localhost:5000/holon_performance_history')
       .then(response => response.json())
       .then(data => setHolonPerformanceHistory(data));
+
+    // Fetch initial holon network
+    fetch('http://localhost:5000/holon_network')
+      .then(response => response.json())
+      .then(data => setHolonNetwork(data));
 
     return () => {
       socket.off('system_update');
@@ -115,7 +125,24 @@ function App() {
           </Paper>
         </Grid>
 
-        {/* New Holon Performance Charts */}
+        {/* Holon Network Graph */}
+        <Grid item xs={12}>
+          <Paper style={{ padding: 16 }}>
+            <Typography variant="h6">Holon Hierarchy</Typography>
+            <div style={{ height: '400px' }}>
+              <ForceGraph2D
+                graphData={holonNetwork}
+                nodeLabel="name"
+                nodeAutoColorBy="capabilities"
+                linkDirectionalArrowLength={3.5}
+                linkDirectionalArrowRelPos={1}
+                linkCurvature={0.25}
+              />
+            </div>
+          </Paper>
+        </Grid>
+
+        {/* Holon Performance Charts */}
         {systemData.holons.map(holon => (
           <Grid item xs={12} md={6} key={holon.id}>
             <Paper style={{ padding: 16 }}>
