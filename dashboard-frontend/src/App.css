@@ -1,0 +1,70 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+  }
+  
+  .App {
+    max-width: 100%;
+    padding: 20px;
+  }
+  
+  .app-title {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .tab-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .tab {
+    background-color: #ddd;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+  }
+  
+  .tab.active {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .content-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  /* Mobile-specific styles */
+  @media (max-width: 768px) {
+    .tab {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+  
+    .content-container {
+      padding: 15px;
+    }
+  
+    input, textarea, select {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  }

@@ -1,0 +1,40 @@
+.strategic-directives {
+    max-width: 100%;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  textarea {
+    height: 100px;
+  }
+  
+  .submit-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  @media (max-width: 768px) {
+    .submit-btn {
+      margin-top: 10px;
+    }
+  }
