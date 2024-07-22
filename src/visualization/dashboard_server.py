@@ -8,16 +8,12 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
-
 class DashboardServer:
     def __init__(self, holon_manager):
         self.holon_manager = holon_manager
         self.thread = None
         self.thread_lock = threading.Lock()
         self.holon_performance_history = {holon.name: [] for holon in holon_manager.holons}
-
-    # ... (previous methods remain the same)
-
     
     def start(self):
         with self.thread_lock:
