@@ -1,4 +1,3 @@
-
 # Holonic Ethical AI System
 
 A project by EthiQuest.ai
@@ -119,6 +118,6 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Contact
 
-For inquiries about how this Holonic AI Agent Swarm System can benefit your organization's ethical AI journey, please contact EthiQuest.ai at [contact information].
+For inquiries about how this Holonic AI Agent Swarm System can benefit your organization's ethical AI journey, please contact EthiQuest.ai at contact@ethiquest.ai.
 
 For technical questions or to report issues, please open an issue on the GitHub repository.
